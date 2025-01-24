@@ -51,11 +51,12 @@ class Correlation:
                 self.sum_dataframe(df_corr)
                 sums.append(self.sum_dataframe(df_corr))
                 row_sum.append("week" + str(list_current_week))
-                df_sum = pd.DataFrame(sums, index=row_sum, columns=["positive", "negative", "abs"])
                 list_of_all_sums_pos, list_of_all_sums_neg = self.sum_corr(df_corr)
                 all_character, character, flag = self.sum_of_characters(df_corr)
                 list_all_character = []
                 list_all_character = all_character + [np.nan] * (len(df_corr.index) - len(all_character))
+                sums[i] = sums[i] + (list_all_character[0], list_all_character[1], list_all_character[2],)
+                df_sum = pd.DataFrame(sums, index=row_sum, columns=["positive", "negative", "abs", "konf +", "konf -", "konf"])
 
                 # Добавляет к output строки снизу
                 df_corr.loc[" "] = np.nan
