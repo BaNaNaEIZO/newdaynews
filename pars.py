@@ -76,17 +76,20 @@ class RamblerPars:
 
             list_for_news_str = [[] for x in range(len(tag_list))]
 
-            for weeks, url in self.get_date_request():
-
+            for year, weeks, url in self.get_date_request():
                 try:
                     # print(url)
                     news_url = []
                     resp = requests.get(url, self.headers)
                     soup = BeautifulSoup(resp.text, 'lxml')
-                    data = soup.find("div", class_="gbl-h3").find_all("h3")
-                    find_a = soup.find("div", class_="gbl-h3").find_all("a")
-                    for item in find_a:
-                        news_url.append(item.get("href"))
+                    try:
+                        data = soup.find("div", class_="gbl-h3").find_all("h3")
+                        find_a = soup.find("div", class_="gbl-h3").find_all("a")
+                        for item in find_a:
+                            news_url.append(item.get("href"))
+                    except AttributeError:
+                        print("AttributeError", url)
+                        data = []
                     # for item in data:
                     #     print(item.text)
                     # print(data)
@@ -99,7 +102,7 @@ class RamblerPars:
                     i = 0
                     print("Неделя: " + str(current_week) + " " + str(news_from_week))
                     for row in news_from_week:
-                        file_writer.writerow([current_week, tag_list[i], row])
+                        file_writer.writerow([f"{current_week}-{year}", tag_list[i], row])
                         i += 1
                     df_for_news_str = pd.DataFrame(list_for_news_str, index=tag_list).T
                     with pd.ExcelWriter(f"files/news_from_week/news_from_{current_week}_week.xlsx") as writer:
@@ -161,7 +164,7 @@ class RamblerPars:
             for current_page in range(1, self.pages + 1):
                 url = f"https://newdaynews.ru/{current_time.year}/{current_time.month}/{current_time.day}/"
                 # print("ссылка создана")
-                yield current_time.isocalendar().week, url
+                yield current_time.isocalendar().year, current_time.isocalendar().week, url
 
 
 def data_input():
