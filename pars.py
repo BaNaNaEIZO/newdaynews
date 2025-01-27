@@ -69,6 +69,7 @@ class RamblerPars:
             df_for_news_str = pd.DataFrame()
 
             current_week = self.current_time.isocalendar().week
+            current_year = self.current_time.isocalendar().year
             for key in self.tags.keys():
                 tag_list.append(key)
 
@@ -102,12 +103,14 @@ class RamblerPars:
                     i = 0
                     print("Неделя: " + str(current_week) + " " + str(news_from_week))
                     for row in news_from_week:
-                        file_writer.writerow([f"{current_week}-{year}", tag_list[i], row])
+                        file_writer.writerow([f"{current_week}-{current_year}", tag_list[i], row])
                         i += 1
                     df_for_news_str = pd.DataFrame(list_for_news_str, index=tag_list).T
-                    with pd.ExcelWriter(f"files/news_from_week/news_from_{current_week}_week.xlsx") as writer:
+                    with pd.ExcelWriter(f"files/news_from_week/news_from_{current_week}_week-{current_year}.xlsx") as writer:
                         for count in range(len(df_for_news_str.columns)):
                             df_for_news_str[tag_list[count]].to_excel(writer, sheet_name=tag_list[count])
+                    if current_year != year:
+                        current_year = year
 
                     current_week = weeks
 
