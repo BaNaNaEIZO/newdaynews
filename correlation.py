@@ -147,7 +147,7 @@ class Correlation:
 
     def all_news_to_excel(self):
         df = pd.read_csv("files/news.csv")
-        sps_weeks = list(set(df.week.tolist()))
+        sps_weeks = df.week.tolist()[::45]
         sps_tag_len = len(list(set(df.tag.tolist())))
         sps_tags = df.tag.tolist()[:sps_tag_len]
         sps_sum_news = df.sum_news.tolist()
@@ -175,7 +175,7 @@ class Correlation:
 
     def all_dependency_news_to_excel(self):
         df = pd.read_csv("files/news.csv")
-        sps_weeks = list(set(df.week.tolist()))
+        sps_weeks = df.week.tolist()[::45]
         sps_tag_len = len(list(set(df.tag.tolist())))
         sps_tags = df.tag.tolist()[:sps_tag_len]
         sps_sum_news = df.sum_news.tolist()
@@ -191,7 +191,10 @@ class Correlation:
                 temp_list = sps_sum_news[count_of_news_start:count_of_news_end]
                 i = 0
                 for tag in sps_tags:
-                    temp_dict_percent[tag] = round(temp_list[i] / max(temp_list) * 100, 1)
+                    if sum(temp_list) != 0:
+                        temp_dict_percent[tag] = round(temp_list[i] / max(temp_list) * 100, 1)
+                    else:
+                        temp_dict_percent[tag] = 0
                     temp_dict_abs[tag] = temp_list[i]
                     i += 1
                 list_news.append(temp_dict_percent)
@@ -219,7 +222,10 @@ class Correlation:
                 temp_list = sps_sum_news[count_of_news_start:count_of_news_end]
                 i = 0
                 for tag in sps_tags:
-                    temp_dict_percent[tag] = round(temp_list[i] / sum(temp_list) * 100, 1)
+                    if sum(temp_list) != 0:
+                        temp_dict_percent[tag] = round(temp_list[i] / sum(temp_list) * 100, 1)
+                    else:
+                        temp_dict_percent[tag] = 0
                     temp_dict_abs[tag] = temp_list[i]
                     i += 1
                 list_news.append(temp_dict_percent)

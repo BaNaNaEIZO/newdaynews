@@ -103,7 +103,7 @@ class RamblerPars:
                     i = 0
                     print("Неделя: " + str(current_week) + " " + str(news_from_week))
                     for row in news_from_week:
-                        file_writer.writerow([f"{current_week}-{current_year}", tag_list[i], row])
+                        file_writer.writerow([f"{current_year}-{current_week}", tag_list[i], row])
                         i += 1
                     df_for_news_str = pd.DataFrame(list_for_news_str, index=tag_list).T
                     with pd.ExcelWriter(f"files/news_from_week/news_from_{current_week}_week-{current_year}.xlsx") as writer:
