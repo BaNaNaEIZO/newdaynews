@@ -40,7 +40,7 @@ class Correlation:
         row_sum = []
         # Файл output.xlsx
         with pd.ExcelWriter(self.output, engine='xlsxwriter') as writer:
-            df, list_of_week, list_of_tag = self.dataframe_transform_to_correlation() #
+            df, list_of_week, list_of_tag = self.dataframe_transform_to_correlation()  #
             len_lag = len(list_of_week) - self.k + 1
             for i in range(len_lag):
                 df_corr = df.iloc[i:self.k + i, :]
@@ -56,7 +56,8 @@ class Correlation:
                 list_all_character = []
                 list_all_character = all_character + [np.nan] * (len(df_corr.index) - len(all_character))
                 sums[i] = sums[i] + (list_all_character[0], list_all_character[1], list_all_character[2],)
-                df_sum = pd.DataFrame(sums, index=row_sum, columns=["positive", "negative", "abs", "konf +", "konf -", "konf"])
+                df_sum = pd.DataFrame(sums, index=row_sum,
+                                      columns=["positive", "negative", "abs", "konf +", "konf -", "konf"])
 
                 # Добавляет к output строки снизу
                 df_corr.loc[" "] = np.nan
@@ -77,9 +78,15 @@ class Correlation:
         list_of_all_sums_pos = []
         list_of_all_sums_neg = []
         for item in df.columns:
-            sum_pos = -1
+            list_df = df[item].fillna(0).tolist()
+
+            if sum(list_df) != 0:
+                print(list_df)
+                sum_pos = -1
+            else:
+                sum_pos = 0
             sum_neg = 0
-            list_df = df[item].tolist()
+
             for i in list_df:
                 if i >= 0:
                     sum_pos += i
@@ -91,6 +98,7 @@ class Correlation:
 
     def sum_of_characters(self, df):
         list_flag = []
+        list_flag_all = []
         list_sum_characters = []
         list_all_sum_pos_characters = 0
         list_all_sum_neg_characters = 0
@@ -104,38 +112,60 @@ class Correlation:
                 if not ((math.isclose(i, 0.0)) or math.isnan(i)):
                     new_list_df.append(i)
 
-            len_list_df = len(new_list_df) - 1  # Вычисляем количество значимых чисел в столбце матрицы
+            len_list_df = 0
 
-            sum_characters = np.sum(np.array(new_list_df) > 0, axis=0) - 1  # Вычисляем сумму положительных чисел
-            list_sum_characters.append(                                #
-                f"+{sum_characters} -{len_list_df - sum_characters}")  # Формируем запись о знаках в столбце таблицы
+            if len(new_list_df) >= 1:
+                len_list_df = len(new_list_df) - 1  # Вычисляем количество значимых чисел в столбце матрицы
+                sum_characters = np.sum(np.array(new_list_df) > 0, axis=0) - 1  # Вычисляем сумму положительных чисел
+                sum_minus = len_list_df - sum_characters
+            else:
+                len_list_df = 0
+                sum_characters = 0
+                sum_minus = 0
+
+            list_sum_characters.append(  #
+                f"+{sum_characters} -{sum_minus}")  # Формируем запись о знаках в столбце таблицы
 
             # Список всех положительных знаков в рамках одной матрицы
             list_all_sum_pos_characters += sum_characters
             # Список всех отрицательных знаков в рамках одной матрицы
             list_all_sum_neg_characters += len_list_df - sum_characters
 
-            # Проверка конфликтов по столбцам
-            if (((len_list_df - sum_characters) % 2 == 0) or (len_list_df == sum_characters)) or (
-                    (len_list_df - sum_characters) == sum_characters) and (
-                    (len_list_df - sum_characters) < sum_characters):
+            # Проверка конфликтов по столбцам v2
+            if sum_characters > sum_minus or sum_characters == sum_minus or (
+                    (sum_minus - sum_characters) > 0) and (sum_minus - sum_characters) % 2 == 0:
                 list_flag.append("нет")
-            elif (len_list_df - sum_characters) > sum_characters or ((len_list_df - sum_characters) % 2) == 1:
-                list_flag.append("ЕСТЬ")
             else:
-                list_flag.append("Не понятно")  # Какая-то ошибка
+                list_flag.append("ЕСТЬ")  # Какая-то ошибка
+
+            # # Проверка конфликтов по столбцам
+            # if (((len_list_df - sum_characters) % 2 == 0) or (len_list_df == sum_characters)) or (
+            #         (len_list_df - sum_characters) == sum_characters) and (
+            #         (len_list_df - sum_characters) < sum_characters):
+            #     list_flag.append("нет")
+            # elif (len_list_df - sum_characters) > sum_characters or ((len_list_df - sum_characters) % 2) == 1:
+            #     list_flag.append("ЕСТЬ")
+            # else:
+            #     list_flag.append("Не понятно")  # Какая-то ошибка
 
         # Проверка конфликта у всей матрицы
-        list_flag_all = []
-        if (((list_all_sum_neg_characters % 2 == 0) or (
-                list_all_sum_pos_characters == list_all_sum_pos_characters + list_all_sum_neg_characters)) or (
-                    list_all_sum_pos_characters == list_all_sum_neg_characters)) and (
-                list_all_sum_neg_characters < list_all_sum_pos_characters):
+        # if (((list_all_sum_neg_characters % 2 == 0) or (
+        #         list_all_sum_pos_characters == list_all_sum_pos_characters + list_all_sum_neg_characters)) or (
+        #             list_all_sum_pos_characters == list_all_sum_neg_characters)) and (
+        #         list_all_sum_neg_characters < list_all_sum_pos_characters):
+        #     list_flag_all.append("нет")
+        # elif list_all_sum_neg_characters > list_all_sum_pos_characters or (list_all_sum_neg_characters % 2) == 1:
+        #     list_flag_all.append("ЕСТЬ")
+        # else:
+        #     list_flag_all.append("Не понятно")
+
+        # Проверка конфликта у всей матрицы v2
+        if list_all_sum_pos_characters > list_all_sum_neg_characters or list_all_sum_pos_characters == list_all_sum_neg_characters or (
+                (list_all_sum_neg_characters - list_all_sum_pos_characters) > 0) and (
+                list_all_sum_neg_characters - list_all_sum_pos_characters) % 2 == 0:
             list_flag_all.append("нет")
-        elif list_all_sum_neg_characters > list_all_sum_pos_characters or (list_all_sum_neg_characters % 2) == 1:
-            list_flag_all.append("ЕСТЬ")
         else:
-            list_flag_all.append("Не понятно")
+            list_flag_all.append("ЕСТЬ")  # Какая-то ошибка
 
         # Формирование вывода сумм знаков и конфликта для всей матрицы
         all_character[0] = f"+{list_all_sum_pos_characters}"
@@ -151,7 +181,7 @@ class Correlation:
         sps_tag_len = len(list(set(df.tag.tolist())))
         sps_tags = df.tag.tolist()[:sps_tag_len]
         sps_sum_news = df.sum_news.tolist()
-        sps_weeks.sort(reverse=True)
+        # sps_weeks.sort(reverse=True)
 
         list_news = []
         count_of_news_start = 0
@@ -179,7 +209,7 @@ class Correlation:
         sps_tag_len = len(list(set(df.tag.tolist())))
         sps_tags = df.tag.tolist()[:sps_tag_len]
         sps_sum_news = df.sum_news.tolist()
-        sps_weeks.sort(reverse=True)
+        # sps_weeks.sort(reverse=True)
 
         count_of_news_start = 0
         count_of_news_end = len(sps_tags)
@@ -206,11 +236,11 @@ class Correlation:
 
     def all_percent_news_to_excel(self):
         df = pd.read_csv("files/news.csv")
-        sps_weeks = list(set(df.week.tolist()))
+        sps_weeks = df.week.tolist()[::45]
         sps_tag_len = len(list(set(df.tag.tolist())))
         sps_tags = df.tag.tolist()[:sps_tag_len]
         sps_sum_news = df.sum_news.tolist()
-        sps_weeks.sort(reverse=True)
+        # sps_weeks.sort(reverse=True)
 
         count_of_news_start = 0
         count_of_news_end = len(sps_tags)
@@ -236,14 +266,24 @@ class Correlation:
                 count_of_news_start += len(sps_tags)
 
     def sum_dataframe(self, df):
-        sum_positive = 0
-        sum_negative = 0
-        sum_all = df.abs().sum().sum()
-        for i in df.columns:
-            for j in df.index:
-                value = df.at[i, j]
-                if value < 0:
-                    sum_negative += value
-                elif value > 0:
-                    sum_positive += value
-        return sum_positive - len(df.columns), sum_negative, sum_all - len(df.columns)
+        list_of_all_sums_pos = []
+        list_of_all_sums_neg = []
+        for item in df.columns:
+            list_df = df[item].fillna(0).tolist()
+
+            if sum(list_df) != 0:
+                print(list_df)
+                sum_pos = -1
+            else:
+                sum_pos = 0
+            sum_neg = 0
+
+            for i in list_df:
+                if i >= 0:
+                    sum_pos += i
+                elif i < 0:
+                    sum_neg += i
+            list_of_all_sums_pos.append(sum_pos)
+            list_of_all_sums_neg.append(sum_neg)
+        return sum(list_of_all_sums_pos), sum(list_of_all_sums_neg), sum(list_of_all_sums_pos) + abs(
+            sum(list_of_all_sums_neg))
