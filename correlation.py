@@ -81,7 +81,6 @@ class Correlation:
             list_df = df[item].fillna(0).tolist()
 
             if sum(list_df) != 0:
-                print(list_df)
                 sum_pos = -1
             else:
                 sum_pos = 0
@@ -272,7 +271,6 @@ class Correlation:
             list_df = df[item].fillna(0).tolist()
 
             if sum(list_df) != 0:
-                print(list_df)
                 sum_pos = -1
             else:
                 sum_pos = 0
